@@ -1,0 +1,218 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZpc{} Victor Matthijs, UGent, April 2020}
+\PYG{c+c1}{\PYGZpc{} ===============================================================}
+\PYG{c+c1}{\PYGZpc{} These rules will help to get the approriate arguments from game}
+\PYG{c+c1}{\PYGZpc{} we could also have it done in the following way: game(Size, Turn, State, Ori, Tiles)}
+\PYG{c+c1}{\PYGZpc{} and size as Size(Columns,Rows), and so on}
+\PYG{c+c1}{\PYGZpc{} But I choosed to write rules/predicates for these things, so I could use the build\PYGZhy{}in arg predicate}
+\PYG{c+c1}{\PYGZpc{} ===============================================================}
+
+\PYG{p}{:\PYGZhy{}} \PYG{n+nf}{module}\PYG{p}{(}\PYG{l+s+sAtom}{game}\PYG{p}{,} \PYG{p}{[}\PYG{l+s+sAtom}{get\PYGZus{}rows\PYGZus{}and\PYGZus{}columns}\PYG{o}{/}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{l+s+sAtom}{get\PYGZus{}tiles}\PYG{o}{/}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{l+s+sAtom}{get\PYGZus{}color}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+s+sAtom}{print\PYGZus{}all\PYGZus{}games}\PYG{o}{/}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+s+sAtom}{create\PYGZus{}next\PYGZus{}games}\PYG{o}{/}\PYG{l+m+mi}{5}\PYG{p}{,} 
+    \PYG{l+s+sAtom}{diff\PYGZus{}of\PYGZus{}boards}\PYG{o}{/}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{l+s+sAtom}{get\PYGZus{}coor}\PYG{o}{/}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{l+s+sAtom}{get\PYGZus{}orientation}\PYG{o}{/}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{l+s+sAtom}{check\PYGZus{}if\PYGZus{}player\PYGZus{}won}\PYG{o}{/}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{l+s+sAtom}{next\PYGZus{}player\PYGZus{}color}\PYG{o}{/}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{l+s+sAtom}{set\PYGZus{}new\PYGZus{}color\PYGZus{}game}\PYG{o}{/}\PYG{l+m+mi}{3}\PYG{p}{,}
+    \PYG{l+s+sAtom}{get\PYGZus{}tile\PYGZus{}info}\PYG{o}{/}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{l+s+sAtom}{get\PYGZus{}state}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+s+sAtom}{create\PYGZus{}game\PYGZus{}from\PYGZus{}board}\PYG{o}{/}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{l+s+sAtom}{check\PYGZus{}orientation\PYGZus{}colors}\PYG{o}{/}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+s+sAtom}{check\PYGZus{}tiles}\PYG{o}{/}\PYG{l+m+mi}{1}\PYG{p}{]).}
+\PYG{p}{:\PYGZhy{}} \PYG{n+nf}{use\PYGZus{}module}\PYG{p}{(}\PYG{l+s+sAtom}{board}\PYG{p}{).}
+
+
+\PYG{c+c1}{\PYGZpc{} ==================================================================}
+
+\PYG{c+c1}{\PYGZpc{} get\PYGZus{}rows\PYGZus{}and\PYGZus{}columns(+Game, \PYGZhy{}Rows, \PYGZhy{}Columns)}
+\PYG{c+c1}{\PYGZpc{} This rule will unify the Rows and Columns of our game that were parsed}
+\PYG{c+c1}{\PYGZpc{} The game is mainly played on a squared board, but it is not always the case,}
+\PYG{c+c1}{\PYGZpc{} so that\PYGZsq{}s why there are separete Variables fort he rows and columns}
+\PYG{n+nf}{get\PYGZus{}rows\PYGZus{}and\PYGZus{}columns}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Size}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nv}{Rows}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} get\PYGZus{}tiles(+Game, \PYGZhy{}Count, \PYGZhy{}TilesList)}
+\PYG{c+c1}{\PYGZpc{} This rule will in turn unify Count to the amount of tiles that are already on the board}
+\PYG{c+c1}{\PYGZpc{} TilesArray will be unified with an array of tiles, of the form: tile(\PYGZsq{}A\PYGZsq{},1,red).}
+\PYG{n+nf}{get\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Count}\PYG{p}{,} \PYG{n+nv}{TilesList}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{,} \PYG{n+nv}{Count}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{,} \PYG{n+nv}{TilesList}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} get\PYGZus{}tile\PYGZus{}info(+Tile, \PYGZhy{}Column, \PYGZhy{}Row, \PYGZhy{}Color)}
+\PYG{c+c1}{\PYGZpc{} This rule will give the specific info from one tile}
+\PYG{n+nf}{get\PYGZus{}tile\PYGZus{}info}\PYG{p}{(}\PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{Column}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{Column}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} get\PYGZus{}state(+Game, \PYGZhy{}State)}
+\PYG{c+c1}{\PYGZpc{} this rule will return either undecided or the color that has won}
+\PYG{n+nf}{get\PYGZus{}state}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{St}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{St}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} get\PYGZus{}color(+Game, \PYGZhy{}Color)}
+\PYG{c+c1}{\PYGZpc{} This simple rule will return the color of the player who is currently playing}
+\PYG{n+nf}{get\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} get\PYGZus{}orientation(+Game, \PYGZhy{}Player1, \PYGZhy{}Player2)}
+\PYG{n+nf}{get\PYGZus{}orientation}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Player1}\PYG{p}{,} \PYG{n+nv}{Player2}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nv}{Player1}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nv}{Player2}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} next\PYGZus{}player\PYGZus{}color(+Game, +Color, \PYGZhy{}NextColor)}
+\PYG{c+c1}{\PYGZpc{} Return the next player his color}
+\PYG{n+nf}{next\PYGZus{}player\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{NextColor}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{p}{(}\PYG{n+nf}{get\PYGZus{}orientation}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{NextColor}\PYG{p}{)} \PYG{p}{;} \PYG{n+nf}{get\PYGZus{}orientation}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{NextColor}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{)),} \PYG{p}{!.}
+
+\PYG{c+c1}{\PYGZpc{} set\PYGZus{}new\PYGZus{}color\PYGZus{}game(+Game, +CurrentColor, \PYGZhy{}Game)}
+\PYG{c+c1}{\PYGZpc{} change the color of a game}
+\PYG{n+nf}{set\PYGZus{}new\PYGZus{}color\PYGZus{}game}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{CurrentColor}\PYG{p}{,} \PYG{n+nf}{game}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nf}{turn}\PYG{p}{(}\PYG{n+nv}{NextColor}\PYG{p}{),} \PYG{n+nv}{State}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{))} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Size}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{3}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{),}
+    \PYG{n+nf}{next\PYGZus{}player\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{CurrentColor}\PYG{p}{,} \PYG{n+nv}{NextColor}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} ==========================================================================================}
+\PYG{c+c1}{\PYGZpc{} Checking for errors in the board that just was parsed by the parser}
+\PYG{c+c1}{\PYGZpc{} ==========================================================================================}
+\PYG{n+nf}{check\PYGZus{}orientation\PYGZus{}colors}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{get\PYGZus{}orientation}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Player1}\PYG{p}{,} \PYG{n+nv}{Player2}\PYG{p}{),}
+    \PYG{n+nf}{get\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{),}
+    \PYG{p}{(}\PYG{n+nv}{Turn} \PYG{o}{=} \PYG{n+nv}{Player1} \PYG{p}{;} \PYG{n+nv}{Turn} \PYG{o}{=} \PYG{n+nv}{Player2}\PYG{p}{)} \PYG{p}{;}
+    \PYG{p}{(}\PYG{n+nf}{print\PYGZus{}message}\PYG{p}{(}\PYG{l+s+sAtom}{error}\PYG{p}{,} \PYG{n+nf}{invalid\PYGZus{}Ori\PYGZus{}color}\PYG{p}{()),} \PYG{n+nf}{halt}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{)).}
+\PYG{n+nn}{prolog}\PYG{p}{:}\PYG{n+nf}{message}\PYG{p}{(}\PYG{n+nf}{invalid\PYGZus{}Ori\PYGZus{}color}\PYG{p}{())} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}Current player color needs to be one of the orientation colors!\PYGZdq{}}\PYG{p}{].}
+
+\PYG{n+nf}{check\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{get\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Count}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{),}
+    \PYG{n+nf}{length}\PYG{p}{(}\PYG{n+nv}{Tiles}\PYG{p}{,} \PYG{n+nv}{LengthTiles}\PYG{p}{),}
+    \PYG{p}{(}\PYG{n+nv}{LengthTiles} \PYG{o}{=} \PYG{n+nv}{Count}\PYG{p}{)} \PYG{p}{;}
+    \PYG{p}{(}\PYG{n+nf}{print\PYGZus{}message}\PYG{p}{(}\PYG{l+s+sAtom}{error}\PYG{p}{,} \PYG{n+nf}{invalid\PYGZus{}Tiles\PYGZus{}Count}\PYG{p}{()),} \PYG{n+nf}{halt}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{)).}
+\PYG{n+nn}{prolog}\PYG{p}{:}\PYG{n+nf}{message}\PYG{p}{(}\PYG{n+nf}{invalid\PYGZus{}Tiles\PYGZus{}Count}\PYG{p}{())} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}The specified count of Tiles, is not the same as the total amount of given tiles!\PYGZdq{}}\PYG{p}{].}
+
+\PYG{c+c1}{\PYGZpc{} ==========================================================================================}
+\PYG{c+c1}{\PYGZpc{} The following rules are used to print all the information to the screen}
+\PYG{c+c1}{\PYGZpc{} ==========================================================================================}
+
+\PYG{c+c1}{\PYGZpc{} print\PYGZus{}all\PYGZus{}games(+Games)}
+\PYG{c+c1}{\PYGZpc{} print all Games from the list to the output}
+\PYG{n+nf}{print\PYGZus{}all\PYGZus{}games}\PYG{p}{([]).}
+\PYG{n+nf}{print\PYGZus{}all\PYGZus{}games}\PYG{p}{([}\PYG{n+nv}{Game}\PYG{p}{])} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{print\PYGZus{}output\PYGZus{}one\PYGZus{}game}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{).}
+\PYG{n+nf}{print\PYGZus{}all\PYGZus{}games}\PYG{p}{([}\PYG{n+nv}{Game}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{])} \PYG{p}{:\PYGZhy{}} 
+    \PYG{n+nf}{print\PYGZus{}output\PYGZus{}one\PYGZus{}game}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{),}
+    \PYG{n+nf}{print}\PYG{p}{(}\PYG{l+s+sAtom}{\PYGZti{}}\PYG{p}{),} \PYG{l+s+sAtom}{nl}\PYG{p}{,}
+    \PYG{n+nf}{print\PYGZus{}all\PYGZus{}games}\PYG{p}{(}\PYG{n+nv}{Rest}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} print\PYGZus{}output\PYGZus{}one\PYGZus{}game(+Game)}
+\PYG{c+c1}{\PYGZpc{} print the info of one game to the output}
+\PYG{n+nf}{print\PYGZus{}output\PYGZus{}one\PYGZus{}game}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{get\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{TurnColor}\PYG{p}{),}
+    \PYG{n+nf}{write}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}turn: \PYGZdq{}}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{TurnColor}\PYG{p}{),} \PYG{l+s+sAtom}{nl}\PYG{p}{,}
+    \PYG{n+nf}{get\PYGZus{}state}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{),}
+    \PYG{n+nf}{next\PYGZus{}player\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{TurnColor}\PYG{p}{,} \PYG{n+nv}{PreviousColor}\PYG{p}{),}
+    \PYG{n+nf}{write}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}state: \PYGZdq{}}\PYG{p}{),} \PYG{n+nf}{print\PYGZus{}state}\PYG{p}{(}\PYG{n+nv}{State}\PYG{p}{,}\PYG{n+nv}{PreviousColor}\PYG{p}{),} \PYG{l+s+sAtom}{nl}\PYG{p}{,}
+    \PYG{n+nf}{get\PYGZus{}rows\PYGZus{}and\PYGZus{}columns}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{),}
+    \PYG{n+nf}{write}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}size: \PYGZdq{}}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{Columns}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{} * \PYGZdq{}}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{Rows}\PYG{p}{),} \PYG{l+s+sAtom}{nl}\PYG{p}{,}
+    \PYG{n+nf}{get\PYGZus{}orientation}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{P1}\PYG{p}{,} \PYG{n+nv}{P2}\PYG{p}{),}
+    \PYG{n+nf}{write}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}orientation: \PYGZdq{}}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{P1}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{} * \PYGZdq{}}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{P2}\PYG{p}{),} \PYG{l+s+sAtom}{nl}\PYG{p}{,}
+    \PYG{n+nf}{get\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{CountTiles}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{),}
+    \PYG{n+nf}{write}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}tiles: \PYGZdq{}}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{CountTiles}\PYG{p}{),} \PYG{l+s+sAtom}{nl}\PYG{p}{,}
+    \PYG{n+nf}{print\PYGZus{}all\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Tiles}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} print\PYGZus{}state(+State, +PreviousColor)}
+\PYG{c+c1}{\PYGZpc{} print the specific state to the output}
+\PYG{n+nf}{print\PYGZus{}state}\PYG{p}{(}\PYG{n+nv}{State}\PYG{p}{,} \PYG{n+nv}{PreviousColor}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nv}{State} \PYG{o}{=} \PYG{n+nv}{PreviousColor}\PYG{p}{,}
+    \PYG{n+nf}{write}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}won by \PYGZdq{}}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{PreviousColor}\PYG{p}{).}
+\PYG{n+nf}{print\PYGZus{}state}\PYG{p}{(}\PYG{n+nv}{State}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{State}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} print\PYGZus{}all\PYGZus{}tiles(Tiles)}
+\PYG{c+c1}{\PYGZpc{} Print all the tiles to the output}
+\PYG{n+nf}{print\PYGZus{}all\PYGZus{}tiles}\PYG{p}{([]).}
+\PYG{n+nf}{print\PYGZus{}all\PYGZus{}tiles}\PYG{p}{([}\PYG{n+nv}{Tile}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{])} \PYG{p}{:\PYGZhy{}} 
+    \PYG{n+nf}{print\PYGZus{}output\PYGZus{}tile}\PYG{p}{(}\PYG{n+nv}{Tile}\PYG{p}{),}
+    \PYG{n+nf}{print\PYGZus{}all\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Rest}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} print\PYGZus{}output\PYGZus{}tile(+Tile)}
+\PYG{c+c1}{\PYGZpc{} Print one specific tile to the output}
+\PYG{n+nf}{print\PYGZus{}output\PYGZus{}tile}\PYG{p}{(}\PYG{n+nv}{Tile}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{get\PYGZus{}tile\PYGZus{}info}\PYG{p}{(}\PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{ColumnInt}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{),}
+    \PYG{n+nv}{Char\PYGZus{}code\PYGZus{}help} \PYG{o}{is} \PYG{n+nv}{ColumnInt} \PYG{o}{+} \PYG{l+m+mi}{64}\PYG{p}{,}
+    \PYG{n+nf}{char\PYGZus{}code}\PYG{p}{(}\PYG{n+nv}{Column}\PYG{p}{,} \PYG{n+nv}{Char\PYGZus{}code\PYGZus{}help}\PYG{p}{),}
+    \PYG{n+nf}{tab}\PYG{p}{(}\PYG{l+m+mi}{5}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}(\PYGZdq{}}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{Column}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{Row}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}) \PYGZhy{}\PYGZgt{} \PYGZdq{}}\PYG{p}{),} \PYG{n+nf}{write}\PYG{p}{(}\PYG{n+nv}{Color}\PYG{p}{),} \PYG{l+s+sAtom}{nl}\PYG{p}{.}
+
+\PYG{c+c1}{\PYGZpc{} ==========================================================================================}
+\PYG{c+c1}{\PYGZpc{} Everything to do with the creation of new games, starting from a current game or board}
+\PYG{c+c1}{\PYGZpc{} ==========================================================================================}
+
+\PYG{c+c1}{\PYGZpc{} create\PYGZus{}next\PYGZus{}games(+Game, +OldBoard, +Columns, +Boards, \PYGZhy{}Games)}
+\PYG{c+c1}{\PYGZpc{} create a list of games from a list of boards.}
+\PYG{n+nf}{create\PYGZus{}next\PYGZus{}games}\PYG{p}{(}\PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{p}{[],} \PYG{p}{[]):\PYGZhy{}} \PYG{p}{!.}
+\PYG{n+nf}{create\PYGZus{}next\PYGZus{}games}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{Board}\PYG{p}{|}\PYG{n+nv}{RestBoards}\PYG{p}{],} \PYG{p}{[}\PYG{n+nv}{NewGame}\PYG{p}{|}\PYG{n+nv}{RestGames}\PYG{p}{])} \PYG{p}{:\PYGZhy{}} 
+    \PYG{n+nf}{create\PYGZus{}game\PYGZus{}from\PYGZus{}board}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Board}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nv}{NewGame}\PYG{p}{),}
+    \PYG{n+nf}{create\PYGZus{}next\PYGZus{}games}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nv}{RestBoards}\PYG{p}{,} \PYG{n+nv}{RestGames}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} create\PYGZus{}game\PYGZus{}from\PYGZus{}board(+Game, +OldBoard, +Board, +Columns, \PYGZhy{}Game)}
+\PYG{c+c1}{\PYGZpc{} Create one game from a specific board}
+\PYG{n+nf}{create\PYGZus{}game\PYGZus{}from\PYGZus{}board}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Board}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nf}{game}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nf}{turn}\PYG{p}{(}\PYG{n+nv}{NextColor}\PYG{p}{),} \PYG{n+nf}{state}\PYG{p}{(}\PYG{n+nv}{NewState}\PYG{p}{),} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nf}{tiles}\PYG{p}{(}\PYG{n+nv}{NewCount}\PYG{p}{,} \PYG{n+nv}{NewTiles}\PYG{p}{)))} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{flatten}\PYG{p}{(}\PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{OldFlatten}\PYG{p}{),}
+    \PYG{n+nf}{flatten}\PYG{p}{(}\PYG{n+nv}{Board}\PYG{p}{,} \PYG{n+nv}{NewFlatten}\PYG{p}{),}
+    \PYG{n+nf}{diff\PYGZus{}of\PYGZus{}boards}\PYG{p}{(}\PYG{n+nv}{OldFlatten}\PYG{p}{,} \PYG{n+nv}{NewFlatten}\PYG{p}{,} \PYG{n+nv}{Position}\PYG{p}{),}
+    \PYG{n+nf}{get\PYGZus{}coor}\PYG{p}{(}\PYG{n+nv}{Position}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{n+nv}{Column}\PYG{p}{),}
+    \PYG{n+nf}{get\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Count}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{),}
+    \PYG{n+nv}{NewCount} \PYG{o}{is} \PYG{n+nv}{Count} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{,}
+    \PYG{n+nf}{get\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{),}
+    \PYG{n+nf}{append}\PYG{p}{(}\PYG{n+nv}{Tiles}\PYG{p}{,} \PYG{p}{[}\PYG{n+nf}{tile}\PYG{p}{(}\PYG{n+nv}{Column}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{)],} \PYG{n+nv}{NewTiles}\PYG{p}{),}
+    \PYG{n+nf}{append}\PYG{p}{([}\PYG{n+nv}{Column}\PYG{p}{],} \PYG{p}{[}\PYG{n+nv}{Row}\PYG{p}{],} \PYG{n+nv}{NewTile}\PYG{p}{),}
+    \PYG{n+nf}{set\PYGZus{}new\PYGZus{}state\PYGZus{}of\PYGZus{}game}\PYG{p}{(}\PYG{n+nv}{NewTile}\PYG{p}{,} \PYG{n+nv}{Board}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{NewState}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Size}\PYG{p}{),}
+    \PYG{n+nf}{arg}\PYG{p}{(}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{),}
+    \PYG{n+nf}{next\PYGZus{}player\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{NextColor}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} set\PYGZus{}new\PYGZus{}state\PYGZus{}of\PYGZus{}game(+NewTile, +Board, +Game, \PYGZhy{}Color)}
+\PYG{c+c1}{\PYGZpc{} if the newtile on the board, is a winning move, then the state will change}
+\PYG{c+c1}{\PYGZpc{} to the winning color, otherwise it will stay undecided}
+\PYG{n+nf}{set\PYGZus{}new\PYGZus{}state\PYGZus{}of\PYGZus{}game}\PYG{p}{(}\PYG{n+nv}{NewTile}\PYG{p}{,} \PYG{n+nv}{Board}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{check\PYGZus{}if\PYGZus{}player\PYGZus{}won}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Board}\PYG{p}{,} \PYG{n+nv}{NewTile}\PYG{p}{),}
+    \PYG{n+nf}{get\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{).}
+\PYG{n+nf}{set\PYGZus{}new\PYGZus{}state\PYGZus{}of\PYGZus{}game}\PYG{p}{(}\PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{OldState}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{get\PYGZus{}state}\PYG{p}{(}\PYG{n+nv}{Game}\PYG{p}{,} \PYG{n+nv}{OldState}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} check\PYGZus{}if\PYGZus{}player\PYGZus{}won(+OldGame, +OldBoard, +NewTile)}
+\PYG{c+c1}{\PYGZpc{} this rule will call the algortihm to check of a color has won, it will spin the board}
+\PYG{c+c1}{\PYGZpc{} if the current color is playing from left to right}
+\PYG{n+nf}{check\PYGZus{}if\PYGZus{}player\PYGZus{}won}\PYG{p}{(}\PYG{n+nv}{OldGame}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{NewTile}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{get\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{OldGame}\PYG{p}{,} \PYG{n+nv}{CurrentColor}\PYG{p}{),}
+    \PYG{n+nf}{get\PYGZus{}orientation}\PYG{p}{(}\PYG{n+nv}{OldGame}\PYG{p}{,} \PYG{n+nv}{CurrentColor}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{),} \PYG{c+c1}{\PYGZpc{} horizontal}
+    \PYG{n+nf}{get\PYGZus{}rows\PYGZus{}and\PYGZus{}columns}\PYG{p}{(}\PYG{n+nv}{OldGame}\PYG{p}{,} \PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{),}
+    \PYG{n+nf}{did\PYGZus{}current\PYGZus{}player\PYGZus{}win}\PYG{p}{(}\PYG{n+nv}{NewTile}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{CurrentColor}\PYG{p}{),!.}
+\PYG{n+nf}{check\PYGZus{}if\PYGZus{}player\PYGZus{}won}\PYG{p}{(}\PYG{n+nv}{OldGame}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{NewTile}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{get\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{OldGame}\PYG{p}{,} \PYG{n+nv}{CurrentColor}\PYG{p}{),}
+    \PYG{n+nf}{get\PYGZus{}orientation}\PYG{p}{(}\PYG{n+nv}{OldGame}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{CurrentColor}\PYG{p}{),} \PYG{c+c1}{\PYGZpc{} vertical}
+    \PYG{n+nf}{get\PYGZus{}rows\PYGZus{}and\PYGZus{}columns}\PYG{p}{(}\PYG{n+nv}{OldGame}\PYG{p}{,} \PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{),}
+    \PYG{n+nf}{change\PYGZus{}board\PYGZus{}for\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{SymBoard}\PYG{p}{),}
+    \PYG{n+nf}{reverse}\PYG{p}{(}\PYG{n+nv}{NewTile}\PYG{p}{,} \PYG{n+nv}{RevNewTile}\PYG{p}{),}
+    \PYG{n+nf}{did\PYGZus{}current\PYGZus{}player\PYGZus{}win}\PYG{p}{(}\PYG{n+nv}{RevNewTile}\PYG{p}{,} \PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nv}{SymBoard}\PYG{p}{,} \PYG{n+nv}{CurrentColor}\PYG{p}{),!.}
+
+\PYG{c+c1}{\PYGZpc{} diff\PYGZus{}of\PYGZus{}boards(+Board1, +Board2, \PYGZhy{}Position)}
+\PYG{c+c1}{\PYGZpc{} search for the newly added position, OldBoard and NewBoard}
+\PYG{n+nf}{diff\PYGZus{}of\PYGZus{}boards}\PYG{p}{(}\PYG{n+nv}{ListBoard1}\PYG{p}{,} \PYG{n+nv}{ListBoard2}\PYG{p}{,} \PYG{n+nv}{Position}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{hulp\PYGZus{}diff\PYGZus{}boards}\PYG{p}{(}\PYG{n+nv}{ListBoard1}\PYG{p}{,} \PYG{n+nv}{ListBoard2}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Position}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} hulp\PYGZus{}diff\PYGZus{}boards(+Board1, +Board2, +Index, \PYGZhy{}Solution)}
+\PYG{n+nf}{hulp\PYGZus{}diff\PYGZus{}boards}\PYG{p}{([],} \PYG{p}{[],} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{)} \PYG{p}{:\PYGZhy{}} \PYG{p}{!.}
+\PYG{n+nf}{hulp\PYGZus{}diff\PYGZus{}boards}\PYG{p}{([}\PYG{n+nv}{X}\PYG{p}{|}\PYG{n+nv}{R1}\PYG{p}{],} \PYG{p}{[}\PYG{n+nv}{X}\PYG{p}{|}\PYG{n+nv}{R2}\PYG{p}{],} \PYG{n+nv}{Index}\PYG{p}{,} \PYG{n+nv}{Solution}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{p}{!,}
+    \PYG{n+nv}{NextIndex} \PYG{o}{is} \PYG{n+nv}{Index} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{,}
+    \PYG{n+nf}{hulp\PYGZus{}diff\PYGZus{}boards}\PYG{p}{(}\PYG{n+nv}{R1}\PYG{p}{,} \PYG{n+nv}{R2}\PYG{p}{,} \PYG{n+nv}{NextIndex}\PYG{p}{,} \PYG{n+nv}{Solution}\PYG{p}{).}
+\PYG{n+nf}{hulp\PYGZus{}diff\PYGZus{}boards}\PYG{p}{([}\PYG{n+nv}{H1}\PYG{p}{|}\PYG{k}{\PYGZus{}}\PYG{p}{],[}\PYG{n+nv}{H2}\PYG{p}{|}\PYG{k}{\PYGZus{}}\PYG{p}{],} \PYG{n+nv}{Index}\PYG{p}{,} \PYG{n+nv}{Index}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{p}{!,}
+    \PYG{n+nv}{H1} \PYG{l+s+sAtom}{\PYGZbs{}=} \PYG{n+nv}{H2}\PYG{p}{.}
+
+\PYG{c+c1}{\PYGZpc{} get\PYGZus{}coor(+Number, +Columns, \PYGZhy{}Row, \PYGZhy{}ColumnNumber)}
+\PYG{c+c1}{\PYGZpc{} This rule will return the matrixCoor of a specific position in a list}
+\PYG{n+nf}{get\PYGZus{}coor}\PYG{p}{(}\PYG{n+nv}{Number}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{n+nv}{ColumnNumber}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nv}{HulpNumber} \PYG{o}{is} \PYG{n+nv}{Number} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{,}
+    \PYG{n+nv}{Row} \PYG{o}{is} \PYG{o}{div}\PYG{p}{(}\PYG{n+nv}{HulpNumber}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{)} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{,}
+    \PYG{n+nv}{ColumnNumber} \PYG{o}{is} \PYG{o}{mod}\PYG{p}{(}\PYG{n+nv}{HulpNumber}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{)}\PYG{o}{+}\PYG{l+m+mf}{1.}
+\end{Verbatim}

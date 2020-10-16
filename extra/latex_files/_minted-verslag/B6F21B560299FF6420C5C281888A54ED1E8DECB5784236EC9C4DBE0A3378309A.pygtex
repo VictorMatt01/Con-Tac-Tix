@@ -1,0 +1,219 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZpc{} Victor Matthijs, UGent, April 2020}
+\PYG{c+c1}{\PYGZpc{} ==========================================================}
+\PYG{c+c1}{\PYGZpc{} part of this code is based on the following link:}
+\PYG{c+c1}{\PYGZpc{} https://github.com/perkola/matrix/blob/master/matrix.pl}
+\PYG{c+c1}{\PYGZpc{} }
+\PYG{c+c1}{\PYGZpc{} The following rules are all used to construct a matrix from the parsed input}
+\PYG{c+c1}{\PYGZpc{} We first construct a matrix containing all zeros, after that we go through all tiles}
+\PYG{c+c1}{\PYGZpc{} and place the correct color on the correcct position.}
+\PYG{c+c1}{\PYGZpc{} ==========================================================}
+
+\PYG{p}{:\PYGZhy{}} \PYG{n+nf}{module}\PYG{p}{(}\PYG{l+s+sAtom}{board}\PYG{p}{,} \PYG{p}{[}\PYG{l+s+sAtom}{construct\PYGZus{}board\PYGZus{}from\PYGZus{}tiles}\PYG{o}{/}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{l+s+sAtom}{did\PYGZus{}current\PYGZus{}player\PYGZus{}win}\PYG{o}{/}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{l+s+sAtom}{find\PYGZus{}top\PYGZus{}hulp}\PYG{o}{/}\PYG{l+m+mi}{8}\PYG{p}{,} 
+    \PYG{l+s+sAtom}{find\PYGZus{}bottom\PYGZus{}hulp}\PYG{o}{/}\PYG{l+m+mi}{8}\PYG{p}{,} \PYG{l+s+sAtom}{change\PYGZus{}board\PYGZus{}for\PYGZus{}color}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+s+sAtom}{place\PYGZus{}tile}\PYG{o}{/}\PYG{l+m+mi}{5}\PYG{p}{,}\PYG{l+s+sAtom}{generate\PYGZus{}top\PYGZus{}positions}\PYG{o}{/}\PYG{l+m+mi}{4}\PYG{p}{,}
+    \PYG{l+s+sAtom}{generate\PYGZus{}bottom\PYGZus{}positions}\PYG{o}{/}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{l+s+sAtom}{only\PYGZus{}hold\PYGZus{}color}\PYG{o}{/}\PYG{l+m+mi}{4}\PYG{p}{,} \PYG{l+s+sAtom}{get\PYGZus{}element}\PYG{o}{/}\PYG{l+m+mi}{3}\PYG{p}{]).}
+
+\PYG{c+c1}{\PYGZpc{} construct\PYGZus{}board\PYGZus{}from\PYGZus{}tiles(+Rows, +Columns, +Tiles, \PYGZhy{}Board)}
+\PYG{c+c1}{\PYGZpc{} This first rule will be exported in the module board}
+\PYG{c+c1}{\PYGZpc{} it construct a matrix with the tile at the correct position, }
+\PYG{c+c1}{\PYGZpc{} these positions where specified in the parsing fase.}
+\PYG{n+nf}{construct\PYGZus{}board\PYGZus{}from\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{,} \PYG{n+nv}{Board}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{make\PYGZus{}empty\PYGZus{}matrix}\PYG{p}{(}\PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nv}{Board1}\PYG{p}{),}
+    \PYG{n+nf}{fill\PYGZus{}matrix\PYGZus{}with\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{,} \PYG{n+nv}{Board1}\PYG{p}{,} \PYG{n+nv}{Board}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} make\PYGZus{}empty\PYGZus{}matrix(+Rows, +Columns, \PYGZhy{}Matrix)}
+\PYG{c+c1}{\PYGZpc{} This rule will help to \PYGZdq{}generate\PYGZdq{} a matrix with a zero at every position.}
+\PYG{n+nf}{make\PYGZus{}empty\PYGZus{}matrix}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{p}{[])}         \PYG{p}{:\PYGZhy{}} \PYG{p}{!.}
+\PYG{n+nf}{make\PYGZus{}empty\PYGZus{}matrix}\PYG{p}{(}\PYG{n+nv}{R}\PYG{p}{,} \PYG{n+nv}{C}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{New}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{])} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nv}{R1} \PYG{o}{is} \PYG{n+nv}{R} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{,}
+    \PYG{n+nf}{generate\PYGZus{}row}\PYG{p}{(}\PYG{n+nv}{C}\PYG{p}{,} \PYG{n+nv}{New}\PYG{p}{),}
+    \PYG{n+nf}{make\PYGZus{}empty\PYGZus{}matrix}\PYG{p}{(}\PYG{n+nv}{R1}\PYG{p}{,} \PYG{n+nv}{C}\PYG{p}{,} \PYG{n+nv}{Rest}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} generate\PYGZus{}row(+Size, \PYGZhy{}Row)}
+\PYG{c+c1}{\PYGZpc{} This rule will generate a Row of length Size}
+\PYG{c+c1}{\PYGZpc{} It will generate this row recursivly and place a zero at every element}
+\PYG{n+nf}{generate\PYGZus{}row}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{p}{[])}     \PYG{p}{:\PYGZhy{}} \PYG{p}{!.}
+\PYG{n+nf}{generate\PYGZus{}row}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{])} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nv}{M1} \PYG{o}{is} \PYG{n+nv}{Size} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{,}
+    \PYG{n+nf}{generate\PYGZus{}row}\PYG{p}{(}\PYG{n+nv}{M1}\PYG{p}{,} \PYG{n+nv}{Rest}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} fill\PYGZus{}matrix\PYGZus{}with\PYGZus{}tiles(+TileList, +Board, \PYGZhy{}NewBoard)}
+\PYG{c+c1}{\PYGZpc{} This rule will replace the zero\PYGZsq{}s with colors}
+\PYG{c+c1}{\PYGZpc{} The input is an list of tiles}
+\PYG{n+nf}{fill\PYGZus{}matrix\PYGZus{}with\PYGZus{}tiles}\PYG{p}{(}\PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{p}{[],} \PYG{n+nv}{Matrix}\PYG{p}{,} \PYG{n+nv}{Matrix}\PYG{p}{).}
+\PYG{n+nf}{fill\PYGZus{}matrix\PYGZus{}with\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{p}{[}\PYG{n+nf}{tile}\PYG{p}{(}\PYG{n+nv}{C}\PYG{p}{,}\PYG{n+nv}{R}\PYG{p}{,}\PYG{n+nv}{Color}\PYG{p}{)|}\PYG{n+nv}{Rest}\PYG{p}{],} \PYG{n+nv}{Matrix}\PYG{p}{,} \PYG{n+nv}{NewMatrix}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{p}{((}\PYG{n+nv}{C} \PYG{o}{\PYGZgt{}=} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{C} \PYG{o}{=\PYGZlt{}} \PYG{n+nv}{Columns}\PYG{p}{),} \PYG{p}{(}\PYG{n+nv}{R} \PYG{o}{\PYGZgt{}=} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{R} \PYG{o}{=\PYGZlt{}} \PYG{n+nv}{Rows}\PYG{p}{),} \PYG{p}{!,}
+    \PYG{n+nf}{place\PYGZus{}tile}\PYG{p}{(}\PYG{n+nv}{Matrix}\PYG{p}{,} \PYG{n+nv}{R}\PYG{p}{,} \PYG{n+nv}{C}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{HelpMatrix}\PYG{p}{),}
+    \PYG{n+nf}{fill\PYGZus{}matrix\PYGZus{}with\PYGZus{}tiles}\PYG{p}{(}\PYG{n+nv}{Rows}\PYG{p}{,} \PYG{n+nv}{Columns}\PYG{p}{,} \PYG{n+nv}{Rest}\PYG{p}{,}\PYG{n+nv}{HelpMatrix}\PYG{p}{,} \PYG{n+nv}{NewMatrix}\PYG{p}{)),} \PYG{p}{!}
+    \PYG{p}{;}
+    \PYG{p}{(}\PYG{n+nf}{print\PYGZus{}message}\PYG{p}{(}\PYG{l+s+sAtom}{error}\PYG{p}{,} \PYG{n+nf}{invalid\PYGZus{}Board\PYGZus{}Tiles}\PYG{p}{()),} \PYG{n+nf}{halt}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{)).}
+
+
+\PYG{n+nn}{prolog}\PYG{p}{:}\PYG{n+nf}{message}\PYG{p}{(}\PYG{n+nf}{invalid\PYGZus{}Board\PYGZus{}Tiles}\PYG{p}{())} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}You gave a wrong Tile confirguration!\PYGZdq{}}\PYG{p}{].}
+
+\PYG{c+c1}{\PYGZpc{} place\PYGZus{}tile(+List, +Row, +Column, +Color, \PYGZhy{}ResultList)}
+\PYG{c+c1}{\PYGZpc{} This rule will place one tile on the correct spot of the matrix}
+\PYG{n+nf}{place\PYGZus{}tile}\PYG{p}{([}\PYG{n+nv}{R}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{],} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Column}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{N}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{])} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{replace}\PYG{p}{(}\PYG{n+nv}{R}\PYG{p}{,} \PYG{n+nv}{Column}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{N}\PYG{p}{),} \PYG{p}{!.}
+\PYG{n+nf}{place\PYGZus{}tile}\PYG{p}{([}\PYG{n+nv}{R}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{],} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{n+nv}{Column}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{R}\PYG{p}{|}\PYG{n+nv}{Rest1}\PYG{p}{])} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nv}{Row1} \PYG{o}{is} \PYG{n+nv}{Row} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{,}
+    \PYG{n+nf}{place\PYGZus{}tile}\PYG{p}{(}\PYG{n+nv}{Rest}\PYG{p}{,} \PYG{n+nv}{Row1}\PYG{p}{,} \PYG{n+nv}{Column}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{Rest1}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} replace(+List, +Index, +Element, \PYGZhy{}ResultList)}
+\PYG{c+c1}{\PYGZpc{} This rule will replace an element at the correct index of an array}
+\PYG{c+c1}{\PYGZpc{} This array will represent a row in our matrix/Board}
+\PYG{n+nf}{replace}\PYG{p}{([}\PYG{k}{\PYGZus{}}\PYG{p}{|}\PYG{n+nv}{T}\PYG{p}{],} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{X}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{X}\PYG{p}{|}\PYG{n+nv}{T}\PYG{p}{]).}
+\PYG{n+nf}{replace}\PYG{p}{([}\PYG{n+nv}{H}\PYG{p}{|}\PYG{n+nv}{T}\PYG{p}{],} \PYG{n+nv}{I}\PYG{p}{,} \PYG{n+nv}{X}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{H}\PYG{p}{|}\PYG{n+nv}{R}\PYG{p}{]):\PYGZhy{}} \PYG{n+nv}{I} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n+nv}{NI} \PYG{o}{is} \PYG{n+nv}{I}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nf}{replace}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{,} \PYG{n+nv}{NI}\PYG{p}{,} \PYG{n+nv}{X}\PYG{p}{,} \PYG{n+nv}{R}\PYG{p}{),} \PYG{p}{!.}
+\PYG{n+nf}{replace}\PYG{p}{(}\PYG{n+nv}{L}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{L}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} This follwoing rule was constructed while using the following link}
+\PYG{c+c1}{\PYGZpc{} link: https://stackoverflow.com/questions/5807455/matrix\PYGZhy{}operations\PYGZhy{}prolog}
+\PYG{c+c1}{\PYGZpc{} the rule will be used when the current color that is playing, isn\PYGZsq{}t the color on the }
+\PYG{c+c1}{\PYGZpc{} top and bottom of the board, if we just take the transpose of the board then we }
+\PYG{c+c1}{\PYGZpc{} can still use the same rules to calculate if a color has won}
+\PYG{c+c1}{\PYGZpc{} change\PYGZus{}board\PYGZus{}for\PYGZus{}color(+HorBoard, \PYGZhy{}VerBoard)}
+\PYG{n+nf}{change\PYGZus{}board\PYGZus{}for\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{HorBoard}\PYG{p}{,} \PYG{n+nv}{VerBoard}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{transpose\PYGZus{}of\PYGZus{}matrix}\PYG{p}{(}\PYG{n+nv}{HorBoard}\PYG{p}{,} \PYG{n+nv}{VerBoard}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} transpose\PYGZus{}of\PYGZus{}matrix(+Rows, \PYGZhy{}Cols)}
+\PYG{c+c1}{\PYGZpc{} get a transpose matrix of a specific board}
+\PYG{n+nf}{transpose\PYGZus{}of\PYGZus{}matrix}\PYG{p}{([[]|}\PYG{k}{\PYGZus{}}\PYG{p}{],} \PYG{p}{[])} \PYG{p}{:\PYGZhy{}} \PYG{p}{!.}
+\PYG{n+nf}{transpose\PYGZus{}of\PYGZus{}matrix}\PYG{p}{([[}\PYG{n+nv}{I}\PYG{p}{|}\PYG{n+nv}{Is}\PYG{p}{]|}\PYG{n+nv}{MatrixRest}\PYG{p}{],} \PYG{p}{[}\PYG{n+nv}{Col}\PYG{p}{|}\PYG{n+nv}{MT}\PYG{p}{])} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{first\PYGZus{}column}\PYG{p}{([[}\PYG{n+nv}{I}\PYG{p}{|}\PYG{n+nv}{Is}\PYG{p}{]|}\PYG{n+nv}{MatrixRest}\PYG{p}{],} \PYG{n+nv}{Col}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{Is}\PYG{p}{|}\PYG{n+nv}{NewMatrixRest}\PYG{p}{]),}
+    \PYG{n+nf}{transpose\PYGZus{}of\PYGZus{}matrix}\PYG{p}{([}\PYG{n+nv}{Is}\PYG{p}{|}\PYG{n+nv}{NewMatrixRest}\PYG{p}{],} \PYG{n+nv}{MT}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} first\PYGZus{}column(+Matrix, +List, \PYGZhy{}FirstCol)}
+\PYG{n+nf}{first\PYGZus{}column}\PYG{p}{([],} \PYG{p}{[],} \PYG{p}{[]).}
+\PYG{n+nf}{first\PYGZus{}column}\PYG{p}{([[]|}\PYG{k}{\PYGZus{}}\PYG{p}{],} \PYG{p}{[],} \PYG{p}{[]).}
+\PYG{n+nf}{first\PYGZus{}column}\PYG{p}{([[}\PYG{n+nv}{I}\PYG{p}{|}\PYG{n+nv}{Is}\PYG{p}{]|}\PYG{n+nv}{MatrixRest}\PYG{p}{],} \PYG{p}{[}\PYG{n+nv}{I}\PYG{p}{|}\PYG{n+nv}{Col}\PYG{p}{],} \PYG{p}{[}\PYG{n+nv}{Is}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{])} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{first\PYGZus{}column}\PYG{p}{(}\PYG{n+nv}{MatrixRest}\PYG{p}{,} \PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{Rest}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} ===============================================================================================}
+\PYG{c+c1}{\PYGZpc{} The code below is written to check if a player has won on a current board. The algorithm will go}
+\PYG{c+c1}{\PYGZpc{} as followed: It will check if there is a path from th new tile to the top of the board for the }
+\PYG{c+c1}{\PYGZpc{} current (color) player. If that is indeed so, then it will look for a path from the new tile to}
+\PYG{c+c1}{\PYGZpc{} the bottom of the board for the current (color) player. If there is a path to the top and to the }
+\PYG{c+c1}{\PYGZpc{} bottom then there is a path from the top to the bottom so the current (color) player has won.}
+\PYG{c+c1}{\PYGZpc{} ===============================================================================================}
+
+\PYG{c+c1}{\PYGZpc{} did\PYGZus{}current\PYGZus{}player\PYGZus{}win(+NewTile, +MaxColumn, +MaxRow, +Board, +CurrentColor)}
+\PYG{c+c1}{\PYGZpc{} This is the start of the algorithm to check if a player has won}
+\PYG{n+nf}{did\PYGZus{}current\PYGZus{}player\PYGZus{}win}\PYG{p}{(}\PYG{n+nv}{NewTile}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Board}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{find\PYGZus{}top\PYGZus{}hulp}\PYG{p}{([}\PYG{n+nv}{NewTile}\PYG{p}{],} \PYG{p}{[],} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{Board}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{l+s+sAtom}{path}\PYG{p}{),}
+    \PYG{n+nf}{find\PYGZus{}bottom\PYGZus{}hulp}\PYG{p}{([}\PYG{n+nv}{NewTile}\PYG{p}{],} \PYG{p}{[],} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{Board}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{l+s+sAtom}{path}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} find\PYGZus{}top\PYGZus{}hulp(+ListOfTiles, +History, +MaxColum, +MaxRow, +CurrentColor, +Board)}
+\PYG{c+c1}{\PYGZpc{} This rule will help to construct a path to the top of the board, it is a}
+\PYG{c+c1}{\PYGZpc{} recursive rule, we use a history so we don\PYGZsq{}t get into a loop.}
+\PYG{n+nf}{find\PYGZus{}top\PYGZus{}hulp}\PYG{p}{([],} \PYG{n+nv}{His}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{l+s+sAtom}{nopath}\PYG{p}{).}
+\PYG{n+nf}{find\PYGZus{}top\PYGZus{}hulp}\PYG{p}{([}\PYG{n+nv}{NewTile}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{],} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{FinalHis}\PYG{p}{,} \PYG{n+nv}{FindTop}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{nth1}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{NewTile}\PYG{p}{,} \PYG{n+nv}{SCol}\PYG{p}{),}
+    \PYG{n+nf}{nth1}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n+nv}{NewTile}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{),}
+    \PYG{n+nf}{append}\PYG{p}{([}\PYG{n+nv}{NewTile}\PYG{p}{],} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{NewHis}\PYG{p}{),}
+    \PYG{p}{(}\PYG{n+nf}{find\PYGZus{}path\PYGZus{}to\PYGZus{}top}\PYG{p}{(}\PYG{n+nv}{SCol}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{NewHis}\PYG{p}{,} \PYG{n+nv}{FinalHis}\PYG{p}{,} \PYG{n+nv}{FindTop}\PYG{p}{),} \PYG{p}{!} \PYG{p}{;}
+    \PYG{n+nf}{find\PYGZus{}top\PYGZus{}hulp}\PYG{p}{(}\PYG{n+nv}{Rest}\PYG{p}{,} \PYG{n+nv}{NewHis}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{FinalHis}\PYG{p}{,} \PYG{n+nv}{FindTop}\PYG{p}{)).}
+
+\PYG{c+c1}{\PYGZpc{} find\PYGZus{}bottom\PYGZus{}hulp(+ListOfTiles, +History, +MaxColum, +MaxRow, +CurrentColor, +Board)}
+\PYG{c+c1}{\PYGZpc{} This rule is almost the same, but here we try to construct a path from the current tile}
+\PYG{c+c1}{\PYGZpc{} to the bottom of the board}
+\PYG{n+nf}{find\PYGZus{}bottom\PYGZus{}hulp}\PYG{p}{([],} \PYG{n+nv}{His}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{l+s+sAtom}{nopath}\PYG{p}{).}
+\PYG{n+nf}{find\PYGZus{}bottom\PYGZus{}hulp}\PYG{p}{([}\PYG{n+nv}{NewTile}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{],} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{FinalHis}\PYG{p}{,} \PYG{n+nv}{FindBottom}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{nth1}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{NewTile}\PYG{p}{,} \PYG{n+nv}{SCol}\PYG{p}{),}
+    \PYG{n+nf}{nth1}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n+nv}{NewTile}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{),}
+    \PYG{n+nf}{append}\PYG{p}{([}\PYG{n+nv}{NewTile}\PYG{p}{],} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{NewHis}\PYG{p}{),}
+    \PYG{p}{(}\PYG{n+nf}{find\PYGZus{}path\PYGZus{}to\PYGZus{}bottom}\PYG{p}{(}\PYG{n+nv}{SCol}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{NewHis}\PYG{p}{,}\PYG{n+nv}{FinalHis}\PYG{p}{,} \PYG{n+nv}{FindBottom}\PYG{p}{),} \PYG{p}{!} \PYG{p}{;}
+    \PYG{n+nf}{find\PYGZus{}bottom\PYGZus{}hulp}\PYG{p}{(}\PYG{n+nv}{Rest}\PYG{p}{,} \PYG{n+nv}{NewHis}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{FinalHis}\PYG{p}{,} \PYG{n+nv}{FindBottom}\PYG{p}{)).}
+
+\PYG{c+c1}{\PYGZpc{} find\PYGZus{}path\PYGZus{}to\PYGZus{}top(+StartColumn, +StartRow, +MaxColumn, +MaxRow, +CurrentColor, +Board, +History)}
+\PYG{c+c1}{\PYGZpc{} This rule will call itself until it reaches the upper most row, then we have a path from the}
+\PYG{c+c1}{\PYGZpc{} start tile to the top. It will fist generate all surrounding tiles (not taking into account the tiles}
+\PYG{c+c1}{\PYGZpc{} beneath itself), it will then filter the list of next tiles, so only the tiles that have same collor}
+\PYG{c+c1}{\PYGZpc{} will stay. Last step is to look in the history so we don\PYGZsq{}t enter a loop in our search. Then we call}
+\PYG{c+c1}{\PYGZpc{} the hulp rule again but now we search for a path closer to the top of the board. Eventually we are }
+\PYG{c+c1}{\PYGZpc{} on the top row and we then know that we have fromed a path from the new layed tile to the top.}
+\PYG{n+nf}{find\PYGZus{}path\PYGZus{}to\PYGZus{}top}\PYG{p}{(}\PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{l+s+sAtom}{path}\PYG{p}{)} \PYG{p}{:\PYGZhy{}} \PYG{p}{!.}
+\PYG{n+nf}{find\PYGZus{}path\PYGZus{}to\PYGZus{}top}\PYG{p}{(}\PYG{n+nv}{SCol}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{FinalHis}\PYG{p}{,} \PYG{n+nv}{FindTop}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{generate\PYGZus{}top\PYGZus{}positions}\PYG{p}{(}\PYG{n+nv}{SCol}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{Sol}\PYG{p}{),}
+    \PYG{n+nf}{only\PYGZus{}hold\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Sol}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{NewSol}\PYG{p}{),}
+    \PYG{n+nf}{only\PYGZus{}no\PYGZus{}history}\PYG{p}{(}\PYG{n+nv}{NewSol}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{NoHisSol}\PYG{p}{),}
+    \PYG{n+nf}{find\PYGZus{}top\PYGZus{}hulp}\PYG{p}{(}\PYG{n+nv}{NoHisSol}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{FinalHis}\PYG{p}{,} \PYG{n+nv}{FindTop}\PYG{p}{),} \PYG{p}{!.}
+
+\PYG{c+c1}{\PYGZpc{} find\PYGZus{}path\PYGZus{}to\PYGZus{}bottom(+StartColumn, +StartRow, +MaxColumn, +MaxRow, +CurrentColor, +Board, +History)}
+\PYG{c+c1}{\PYGZpc{} This rule does almost the same as the one above, but here we search for a path to the bottom of the}
+\PYG{c+c1}{\PYGZpc{} board, also remembering a histroy so we don\PYGZsq{}t get stuck in a loop.}
+\PYG{n+nf}{find\PYGZus{}path\PYGZus{}to\PYGZus{}bottom}\PYG{p}{(}\PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{l+s+sAtom}{path}\PYG{p}{)} \PYG{p}{:\PYGZhy{}} \PYG{p}{!.}
+\PYG{n+nf}{find\PYGZus{}path\PYGZus{}to\PYGZus{}bottom}\PYG{p}{(}\PYG{n+nv}{SCol}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{FinalHis}\PYG{p}{,} \PYG{n+nv}{FindBottom}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{generate\PYGZus{}bottom\PYGZus{}positions}\PYG{p}{(}\PYG{n+nv}{SCol}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Sol}\PYG{p}{),}
+    \PYG{n+nf}{only\PYGZus{}hold\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Sol}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{NewSol}\PYG{p}{),}
+    \PYG{n+nf}{only\PYGZus{}no\PYGZus{}history}\PYG{p}{(}\PYG{n+nv}{NewSol}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{NoHisSol}\PYG{p}{),}
+    \PYG{n+nf}{find\PYGZus{}bottom\PYGZus{}hulp}\PYG{p}{(}\PYG{n+nv}{NoHisSol}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{FinalHis}\PYG{p}{,} \PYG{n+nv}{FindBottom}\PYG{p}{),} \PYG{p}{!.}
+
+\PYG{c+c1}{\PYGZpc{} ==================================================================================}
+\PYG{c+c1}{\PYGZpc{} The functions below will help to search for all surrounding tiles, this will help to}
+\PYG{c+c1}{\PYGZpc{} search a path in our current board}
+\PYG{c+c1}{\PYGZpc{} ==================================================================================}
+
+\PYG{c+c1}{\PYGZpc{} generate\PYGZus{}top\PYGZus{}positions(+StartCol, +StartRow, +MaxColumn, \PYGZhy{}SolutionTiles)}
+\PYG{c+c1}{\PYGZpc{} This will generate all surrounding tiles that lay above or next to the current tile}
+\PYG{c+c1}{\PYGZpc{} It will generate all the N tiles below}
+\PYG{c+c1}{\PYGZpc{}   |   | N | N |}
+\PYG{c+c1}{\PYGZpc{}   | N | x | N |}
+\PYG{c+c1}{\PYGZpc{}   |   |   |   |}
+\PYG{n+nf}{generate\PYGZus{}top\PYGZus{}positions}\PYG{p}{(}\PYG{n+nv}{SCol}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{Solution}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{findall}\PYG{p}{(}\PYG{n+nv}{Position}\PYG{p}{,} \PYG{n+nf}{next\PYGZus{}top\PYGZus{}position}\PYG{p}{(}\PYG{n+nv}{SCol}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{Position}\PYG{p}{),} \PYG{n+nv}{Solution}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} next\PYGZus{}top\PYGZus{}position(+Column, +Row, +MaxColumn, \PYGZhy{}[NewColumn,NewRow])}
+\PYG{n+nf}{next\PYGZus{}top\PYGZus{}position}\PYG{p}{(}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,}  \PYG{p}{[}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{NewRow}\PYG{p}{])}    \PYG{p}{:\PYGZhy{}} \PYG{n+nv}{Row} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{NewRow} \PYG{o}{is} \PYG{n+nv}{Row} \PYG{o}{\PYGZhy{}} \PYG{l+m+mf}{1.}
+\PYG{n+nf}{next\PYGZus{}top\PYGZus{}position}\PYG{p}{(}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{n+nv}{MC}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{NewCol}\PYG{p}{,} \PYG{n+nv}{NewRow}\PYG{p}{])} \PYG{p}{:\PYGZhy{}} \PYG{n+nv}{Row} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Col} \PYG{o}{\PYGZlt{}} \PYG{n+nv}{MC}\PYG{p}{,} \PYG{n+nv}{NewCol} \PYG{o}{is} \PYG{n+nv}{Col} \PYG{o}{+} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{NewRow} \PYG{o}{is} \PYG{n+nv}{Row} \PYG{o}{\PYGZhy{}} \PYG{l+m+mf}{1.}
+\PYG{n+nf}{next\PYGZus{}top\PYGZus{}position}\PYG{p}{(}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{n+nv}{MC}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{NewCol}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{])}    \PYG{p}{:\PYGZhy{}} \PYG{n+nv}{Col} \PYG{o}{\PYGZlt{}} \PYG{n+nv}{MC}\PYG{p}{,} \PYG{n+nv}{NewCol} \PYG{o}{is} \PYG{n+nv}{Col} \PYG{o}{+} \PYG{l+m+mf}{1.}
+\PYG{n+nf}{next\PYGZus{}top\PYGZus{}position}\PYG{p}{(}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,}  \PYG{p}{[}\PYG{n+nv}{NewCol}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{])}    \PYG{p}{:\PYGZhy{}} \PYG{n+nv}{Col} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{NewCol} \PYG{o}{is} \PYG{n+nv}{Col} \PYG{o}{\PYGZhy{}} \PYG{l+m+mf}{1.}
+
+\PYG{c+c1}{\PYGZpc{} generate\PYGZus{}bottom\PYGZus{}positions(+StartCol, +StartRow, +MaxColumn, +MaxRow, \PYGZhy{}SolutionTiles)}
+\PYG{c+c1}{\PYGZpc{} This will generate all surrounding tiles that lay under or next to the current tile}
+\PYG{c+c1}{\PYGZpc{} It will generate all the N tiles below}
+\PYG{c+c1}{\PYGZpc{}   |   |   |   |}
+\PYG{c+c1}{\PYGZpc{}   | N | x | N |}
+\PYG{c+c1}{\PYGZpc{}   | N | N |   |}
+\PYG{n+nf}{generate\PYGZus{}bottom\PYGZus{}positions}\PYG{p}{(}\PYG{n+nv}{SCol}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Solution}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{findall}\PYG{p}{(}\PYG{n+nv}{Position}\PYG{p}{,} \PYG{n+nf}{next\PYGZus{}bottom\PYGZus{}position}\PYG{p}{(}\PYG{n+nv}{SCol}\PYG{p}{,} \PYG{n+nv}{SRow}\PYG{p}{,} \PYG{n+nv}{MCol}\PYG{p}{,} \PYG{n+nv}{MRow}\PYG{p}{,} \PYG{n+nv}{Position}\PYG{p}{),} \PYG{n+nv}{Solution}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} next\PYGZus{}bottom\PYGZus{}position(+Column, +Row, +MaxColumn, +MaxRow, \PYGZhy{}[NewColumn, NewRow])}
+\PYG{n+nf}{next\PYGZus{}bottom\PYGZus{}position}\PYG{p}{(}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{MR}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{NewRow}\PYG{p}{])}    \PYG{p}{:\PYGZhy{}} \PYG{n+nv}{Row} \PYG{o}{\PYGZlt{}} \PYG{n+nv}{MR}\PYG{p}{,} \PYG{n+nv}{NewRow} \PYG{o}{is} \PYG{n+nv}{Row} \PYG{o}{+} \PYG{l+m+mf}{1.}
+\PYG{n+nf}{next\PYGZus{}bottom\PYGZus{}position}\PYG{p}{(}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{MR}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{NewCol}\PYG{p}{,} \PYG{n+nv}{NewRow}\PYG{p}{])} \PYG{p}{:\PYGZhy{}} \PYG{n+nv}{Row} \PYG{o}{\PYGZlt{}} \PYG{n+nv}{MR}\PYG{p}{,} \PYG{n+nv}{Col} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{NewCol} \PYG{o}{is} \PYG{n+nv}{Col} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{NewRow} \PYG{o}{is} \PYG{n+nv}{Row} \PYG{o}{+} \PYG{l+m+mf}{1.}
+\PYG{n+nf}{next\PYGZus{}bottom\PYGZus{}position}\PYG{p}{(}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{n+nv}{MC}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{NewCol}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{])} \PYG{p}{:\PYGZhy{}} \PYG{n+nv}{Col} \PYG{o}{\PYGZlt{}} \PYG{n+nv}{MC}\PYG{p}{,} \PYG{n+nv}{NewCol} \PYG{o}{is} \PYG{n+nv}{Col} \PYG{o}{+} \PYG{l+m+mf}{1.}
+\PYG{n+nf}{next\PYGZus{}bottom\PYGZus{}position}\PYG{p}{(}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{NewCol}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{])}  \PYG{p}{:\PYGZhy{}} \PYG{n+nv}{Col} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{NewCol} \PYG{o}{is} \PYG{n+nv}{Col} \PYG{o}{\PYGZhy{}} \PYG{l+m+mf}{1.}
+
+\PYG{c+c1}{\PYGZpc{} ==================================================================================}
+\PYG{c+c1}{\PYGZpc{} The following rules are mainly to help the rules above}
+\PYG{c+c1}{\PYGZpc{} ==================================================================================}
+
+\PYG{c+c1}{\PYGZpc{} only\PYGZus{}hold\PYGZus{}color(+Tiles, +Board, +Color, \PYGZhy{}ColorTiles)}
+\PYG{c+c1}{\PYGZpc{} This recursive rule will remove all tiles that aren\PYGZsq{}t the current color}
+\PYG{n+nf}{only\PYGZus{}hold\PYGZus{}color}\PYG{p}{([],} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{p}{[])} \PYG{p}{:\PYGZhy{}} \PYG{p}{!.}
+\PYG{n+nf}{only\PYGZus{}hold\PYGZus{}color}\PYG{p}{([}\PYG{n+nv}{Tile}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{],} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{Tile}\PYG{p}{|}\PYG{n+nv}{RestSol}\PYG{p}{])} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{get\PYGZus{}element}\PYG{p}{(}\PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{Value}\PYG{p}{),}
+    \PYG{n+nv}{Value} \PYG{o}{==} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{p}{!,}
+    \PYG{n+nf}{only\PYGZus{}hold\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Rest}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{RestSol}\PYG{p}{).}
+\PYG{n+nf}{only\PYGZus{}hold\PYGZus{}color}\PYG{p}{([}\PYG{n+nv}{Tile}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{],} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{RestSol}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{get\PYGZus{}element}\PYG{p}{(}\PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{Value}\PYG{p}{),}
+    \PYG{o}{not}\PYG{p}{(}\PYG{n+nv}{Value} \PYG{o}{=} \PYG{n+nv}{Color}\PYG{p}{),} \PYG{p}{!,}
+    \PYG{n+nf}{only\PYGZus{}hold\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Rest}\PYG{p}{,} \PYG{n+nv}{OldBoard}\PYG{p}{,} \PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{RestSol}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} onmy\PYGZus{}no\PYGZus{}history(+Tiles, +Histroy, \PYGZhy{}NewTiles)}
+\PYG{c+c1}{\PYGZpc{} This rule will only return tiles that haven\PYGZsq{}t been visited yet}
+\PYG{n+nf}{only\PYGZus{}no\PYGZus{}history}\PYG{p}{([],} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{p}{[])} \PYG{p}{:\PYGZhy{}} \PYG{p}{!.}
+\PYG{n+nf}{only\PYGZus{}no\PYGZus{}history}\PYG{p}{([}\PYG{n+nv}{Tile}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{],} \PYG{n+nv}{His}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{Tile}\PYG{p}{|}\PYG{n+nv}{RestSol}\PYG{p}{])} \PYG{p}{:\PYGZhy{}}
+    \PYG{o}{not}\PYG{p}{(}\PYG{n+nf}{member}\PYG{p}{(}\PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{)),} \PYG{p}{!,}
+    \PYG{n+nf}{only\PYGZus{}no\PYGZus{}history}\PYG{p}{(}\PYG{n+nv}{Rest}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{RestSol}\PYG{p}{).}
+\PYG{n+nf}{only\PYGZus{}no\PYGZus{}history}\PYG{p}{([}\PYG{n+nv}{Tile}\PYG{p}{|}\PYG{n+nv}{Rest}\PYG{p}{],} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{NewRes}\PYG{p}{)} \PYG{p}{:\PYGZhy{}}
+    \PYG{n+nf}{member}\PYG{p}{(}\PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{),} \PYG{p}{!,}
+    \PYG{n+nf}{only\PYGZus{}no\PYGZus{}history}\PYG{p}{(}\PYG{n+nv}{Rest}\PYG{p}{,} \PYG{n+nv}{His}\PYG{p}{,} \PYG{n+nv}{NewRes}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} get\PYGZus{}element(+Matrix, +Tile, \PYGZhy{}Value)}
+\PYG{c+c1}{\PYGZpc{} This simple rule will get a specific value from a matrix/Board}
+\PYG{n+nf}{get\PYGZus{}element}\PYG{p}{(}\PYG{n+nv}{Mat}\PYG{p}{,} \PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{Val}\PYG{p}{)} \PYG{p}{:\PYGZhy{}} 
+    \PYG{n+nf}{nth1}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{Col}\PYG{p}{),}
+    \PYG{n+nf}{nth1}\PYG{p}{(}\PYG{l+m+mi}{2}\PYG{p}{,} \PYG{n+nv}{Tile}\PYG{p}{,} \PYG{n+nv}{Row}\PYG{p}{),}
+    \PYG{n+nf}{nth1}\PYG{p}{(}\PYG{n+nv}{Row}\PYG{p}{,} \PYG{n+nv}{Mat}\PYG{p}{,} \PYG{n+nv}{ARow}\PYG{p}{),} 
+    \PYG{n+nf}{nth1}\PYG{p}{(}\PYG{n+nv}{Col}\PYG{p}{,} \PYG{n+nv}{ARow}\PYG{p}{,} \PYG{n+nv}{Val}\PYG{p}{).}
+\end{Verbatim}

@@ -1,0 +1,117 @@
+\begin{Verbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZpc{} Victor Matthijs, UGent, April 2020}
+\PYG{c+c1}{\PYGZpc{} ==========================================================}
+\PYG{c+c1}{\PYGZpc{} This file will contain all the code for parsing the input file}
+\PYG{c+c1}{\PYGZpc{} The input file will have the following structure (doesn\PYGZsq{}t need to be in this exact order)}
+\PYG{c+c1}{\PYGZpc{} A) The size of the board \PYGZhy{}\PYGZhy{}\PYGZgt{} size: Columns * Rows}
+\PYG{c+c1}{\PYGZpc{} B) Which player his turn it is \PYGZhy{}\PYGZhy{}\PYGZgt{} turn: red}
+\PYG{c+c1}{\PYGZpc{} C) The orientation of the board \PYGZhy{}\PYGZhy{}\PYGZgt{} orientation: red * blue}
+\PYG{c+c1}{\PYGZpc{}       The first color plays from the top to the bottom}
+\PYG{c+c1}{\PYGZpc{}       The second color plays from left to right}
+\PYG{c+c1}{\PYGZpc{} D) The state of the game, can be undecided or \PYGZdq{}won by color\PYGZdq{} \PYGZhy{}\PYGZhy{}\PYGZgt{} state: undecided}
+\PYG{c+c1}{\PYGZpc{} E) The tiles that are already placed on the board}
+\PYG{c+c1}{\PYGZpc{}       tiles: 4, followed by a tile on a newline}
+\PYG{c+c1}{\PYGZpc{}               tile has the following form: (A1) \PYGZhy{}\PYGZgt{} red}
+\PYG{c+c1}{\PYGZpc{}}
+\PYG{c+c1}{\PYGZpc{} Below we show a small example of an input file:}
+\PYG{c+c1}{\PYGZpc{}       orientation: red * blue}
+\PYG{c+c1}{\PYGZpc{}       tiles: 4}
+\PYG{c+c1}{\PYGZpc{}           (A2) \PYGZhy{}\PYGZgt{} red}
+\PYG{c+c1}{\PYGZpc{}           (B2) \PYGZhy{}\PYGZgt{} blue}
+\PYG{c+c1}{\PYGZpc{}           (A1) \PYGZhy{}\PYGZgt{} red}
+\PYG{c+c1}{\PYGZpc{}           (C2) \PYGZhy{}\PYGZgt{} blue}
+\PYG{c+c1}{\PYGZpc{}       size: 3 * 3}
+\PYG{c+c1}{\PYGZpc{}       turn: red}
+\PYG{c+c1}{\PYGZpc{}       state: undecided}
+\PYG{c+c1}{\PYGZpc{}}
+\PYG{c+c1}{\PYGZpc{} We will use different Prolog modules to support our implementation for the parser}
+\PYG{c+c1}{\PYGZpc{} ==========================================================}
+\PYG{c+c1}{\PYGZpc{} Important note!}
+\PYG{c+c1}{\PYGZpc{} The implemantion of the parser uses Prolog definite clause grammar (DCG)}
+\PYG{c+c1}{\PYGZpc{} A DCG rule has the following form}
+\PYG{c+c1}{\PYGZpc{}       Head \PYGZhy{}\PYGZhy{}\PYGZgt{} Body}
+\PYG{c+c1}{\PYGZpc{} A rule\PYGZsq{}s body consists of terminals and nonterminals. A terminal is a list, which stands for the elements it contains.}
+\PYG{c+c1}{\PYGZpc{} The following is syntactic suger:}
+\PYG{c+c1}{\PYGZpc{}       s \PYGZhy{}\PYGZhy{}\PYGZgt{} np, vp.}
+\PYG{c+c1}{\PYGZpc{}   for}
+\PYG{c+c1}{\PYGZpc{}       s(A,C) :\PYGZhy{} np(A,B),vp(B,C)}
+\PYG{c+c1}{\PYGZpc{}}
+\PYG{c+c1}{\PYGZpc{} ==========================================================}
+\PYG{p}{:\PYGZhy{}} \PYG{n+nf}{module}\PYG{p}{(}\PYG{l+s+sAtom}{parser}\PYG{p}{,} \PYG{p}{[}\PYG{l+s+sAtom}{parse}\PYG{o}{/}\PYG{l+m+mi}{3}\PYG{p}{]).}
+\PYG{p}{:\PYGZhy{}} \PYG{n+nf}{use\PYGZus{}module}\PYG{p}{(}\PYG{n+nf}{library}\PYG{p}{(}\PYG{l+s+sAtom}{dcg}\PYG{o}{/}\PYG{l+s+sAtom}{basics}\PYG{p}{)).}
+
+\PYG{c+c1}{\PYGZpc{} This is the main rule that will be called to parse a file}
+\PYG{c+c1}{\PYGZpc{} The variable Game will unify with a rule representing a game}
+\PYG{c+c1}{\PYGZpc{} this will also try to satisfy the subgoal: game\PYGZus{}parts}
+\PYG{n+nf}{parse}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} 
+    \PYG{n+nf}{game\PYGZus{}parts}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{)),} \PYG{p}{!.}
+
+\PYG{c+c1}{\PYGZpc{} This following rule game\PYGZus{}parts will try to satisfy all }
+\PYG{c+c1}{\PYGZpc{} it\PYGZsq{}s subgoals, this rule is recursive. It is made recursive }
+\PYG{c+c1}{\PYGZpc{} so we make sure we get all the different structures from }
+\PYG{c+c1}{\PYGZpc{} the input file to construct our game}
+\PYG{n+nf}{game\PYGZus{}parts}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} 
+    \PYG{n+nf}{game\PYGZus{}part}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{)),} 
+    \PYG{n+nf}{game\PYGZus{}parts}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{)).}
+\PYG{n+nf}{game\PYGZus{}parts}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} 
+    \PYG{n+nf}{game\PYGZus{}part}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{)).}
+
+\PYG{c+c1}{\PYGZpc{} This rule will try to satisfy all the \PYGZdq{}structure\PYGZdq{} rules}
+\PYG{c+c1}{\PYGZpc{} this can also be written as the following line of code:}
+\PYG{c+c1}{\PYGZpc{} game\PYGZus{}part(game(S, T, St, O, Ti))  \PYGZhy{}\PYGZhy{}\PYGZgt{} size(S) ; turn(T) ; state(St) ; orientation(O) ; tiles(Ti).}
+\PYG{c+c1}{\PYGZpc{} I think it\PYGZsq{}s more understandable in the following way}
+\PYG{n+nf}{game\PYGZus{}part}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{))}  \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{size}\PYG{p}{(}\PYG{n+nv}{Size}\PYG{p}{).}
+\PYG{n+nf}{game\PYGZus{}part}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{Turn}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{))}  \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{turn}\PYG{p}{(}\PYG{n+nv}{Turn}\PYG{p}{).}
+\PYG{n+nf}{game\PYGZus{}part}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{State}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{state}\PYG{p}{(}\PYG{n+nv}{State}\PYG{p}{).}
+\PYG{n+nf}{game\PYGZus{}part}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{Ori}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{))}   \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{orientation}\PYG{p}{(}\PYG{n+nv}{Ori}\PYG{p}{).}
+\PYG{n+nf}{game\PYGZus{}part}\PYG{p}{(}\PYG{n+nf}{game}\PYG{p}{(}\PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{k}{\PYGZus{}}\PYG{p}{,} \PYG{n+nv}{Tiles}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{tiles}\PYG{p}{(}\PYG{n+nv}{Tiles}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} =====================================================}
+\PYG{c+c1}{\PYGZpc{} The next 5 rules are the game parts we need to construct a game of Con\PYGZhy{}Tac\PYGZhy{}Tix}
+
+\PYG{c+c1}{\PYGZpc{} This rule will handle the parsing of our turn, it will look which color his turn it is}
+\PYG{n+nf}{turn}\PYG{p}{(}\PYG{n+nf}{turn}\PYG{p}{(}\PYG{n+nv}{Turn}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}turn:\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{n+nf}{string\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Turn}\PYG{p}{),} \PYG{l+s+sAtom}{blanks\PYGZus{}to\PYGZus{}nl}\PYG{p}{.}
+
+\PYG{c+c1}{\PYGZpc{} This rule will handle the parsing of the size, this will give us our rows and columns}
+\PYG{n+nf}{size}\PYG{p}{(}\PYG{n+nf}{size}\PYG{p}{(}\PYG{n+nv}{X}\PYG{p}{,}\PYG{n+nv}{Y}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}size:\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{n+nf}{int}\PYG{p}{(}\PYG{n+nv}{X}\PYG{p}{),} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}*\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{n+nf}{int}\PYG{p}{(}\PYG{n+nv}{Y}\PYG{p}{),} \PYG{l+s+sAtom}{blanks\PYGZus{}to\PYGZus{}nl}\PYG{p}{.}
+
+\PYG{c+c1}{\PYGZpc{} This rule will handle the parsing of the state of the game, this will always be undecided}
+\PYG{n+nf}{state}\PYG{p}{(}\PYG{n+nf}{state}\PYG{p}{(}\PYG{l+s+sAtom}{undecided}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}state:\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}undecided\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{blanks\PYGZus{}to\PYGZus{}nl}\PYG{p}{.}
+
+\PYG{c+c1}{\PYGZpc{} This rule will handle the orientation of the game, it will parse two colors}
+\PYG{n+nf}{orientation}\PYG{p}{(}\PYG{n+nf}{orientation}\PYG{p}{(}\PYG{n+nv}{C1}\PYG{p}{,}\PYG{n+nv}{C2}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}orientation:\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{n+nf}{string\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{C1}\PYG{p}{),} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}*\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{n+nf}{string\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{C2}\PYG{p}{),} \PYG{l+s+sAtom}{blanks\PYGZus{}to\PYGZus{}nl}\PYG{p}{.}
+
+\PYG{c+c1}{\PYGZpc{} The following rules are all used to parse the tiles that are on the board.}
+\PYG{c+c1}{\PYGZpc{} These rules will use recursion to make sure we parse all the tiles.}
+\PYG{n+nf}{tiles}\PYG{p}{(}\PYG{n+nf}{tiles}\PYG{p}{(}\PYG{n+nv}{Number}\PYG{p}{,} \PYG{n+nv}{ArrayOfTiles}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}tiles:\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{n+nf}{int}\PYG{p}{(}\PYG{n+nv}{Number}\PYG{p}{),} \PYG{l+s+sAtom}{blanks\PYGZus{}to\PYGZus{}nl}\PYG{p}{,}
+                        \PYG{n+nf}{parsePlayerTiles}\PYG{p}{(}\PYG{n+nv}{ArrayOfTiles}\PYG{p}{).}
+
+\PYG{c+c1}{\PYGZpc{} We parse all tiles into an array}
+\PYG{n+nf}{parsePlayerTiles}\PYG{p}{([}\PYG{n+nv}{Tile}\PYG{p}{|}\PYG{n+nv}{ArrayOfTiles}\PYG{p}{])} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{parseNewTile}\PYG{p}{(}\PYG{n+nv}{Tile}\PYG{p}{),} \PYG{n+nf}{parsePlayerTiles}\PYG{p}{(}\PYG{n+nv}{ArrayOfTiles}\PYG{p}{).}
+\PYG{n+nf}{parsePlayerTiles}\PYG{p}{([}\PYG{n+nv}{Tile}\PYG{p}{])} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{parseNewTile}\PYG{p}{(}\PYG{n+nv}{Tile}\PYG{p}{).}
+\PYG{n+nf}{parsePlayerTiles}\PYG{p}{([])} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{p}{[].}
+
+\PYG{c+c1}{\PYGZpc{} This rule will parse one tile}
+\PYG{n+nf}{parseNewTile}\PYG{p}{(}\PYG{n+nf}{tile}\PYG{p}{(}\PYG{n+nv}{C}\PYG{p}{,}\PYG{n+nv}{R}\PYG{p}{,}\PYG{n+nv}{Color}\PYG{p}{))} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}(\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{n+nf}{parse\PYGZus{}Col}\PYG{p}{(}\PYG{n+nv}{C}\PYG{p}{),} \PYG{n+nf}{int}\PYG{p}{(}\PYG{n+nv}{R}\PYG{p}{),} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{})\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{ws}\PYG{p}{,}\PYG{l+s+s2}{\PYGZdq{}\PYGZhy{}\PYGZgt{}\PYGZdq{}}\PYG{p}{,} \PYG{l+s+sAtom}{ws}\PYG{p}{,} \PYG{n+nf}{string\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Color}\PYG{p}{),} \PYG{l+s+sAtom}{blanks\PYGZus{}to\PYGZus{}nl}\PYG{p}{.}
+
+
+\PYG{c+c1}{\PYGZpc{} =====================================================}
+\PYG{c+c1}{\PYGZpc{} The rules below are necessary to satisfy some subgoals above in the structures}
+
+\PYG{c+c1}{\PYGZpc{} handeling the optinal whitespaces}
+\PYG{c+c1}{\PYGZpc{} (not really super necissary to rewrite the predicate blanks, but it just was easier this way)}
+\PYG{n+nf}{ws} \PYG{o}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{l+s+sAtom}{blanks}\PYG{p}{.}
+
+\PYG{c+c1}{\PYGZpc{} Parsing the different colors}
+\PYG{n+nf}{string\PYGZus{}color}\PYG{p}{(}\PYG{n+nv}{Color}\PYG{p}{)} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{string}\PYG{p}{(}\PYG{n+nv}{X}\PYG{p}{),} \PYG{p}{\PYGZob{}}\PYG{n+nf}{atom\PYGZus{}codes}\PYG{p}{(}\PYG{n+nv}{Color}\PYG{p}{,} \PYG{n+nv}{X}\PYG{p}{)\PYGZcb{}.}
+
+\PYG{c+c1}{\PYGZpc{} parsing an integer}
+\PYG{n+nf}{int}\PYG{p}{(}\PYG{n+nv}{Result}\PYG{p}{)} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{number\PYGZus{}}\PYG{p}{(}\PYG{n+nv}{Number}\PYG{p}{),} \PYG{p}{\PYGZob{}} \PYG{n+nf}{number\PYGZus{}codes}\PYG{p}{(}\PYG{n+nv}{Result}\PYG{p}{,} \PYG{n+nv}{Number}\PYG{p}{)} \PYG{p}{\PYGZcb{}.}
+
+\PYG{n+nf}{number\PYGZus{}}\PYG{p}{([}\PYG{n+nv}{H}\PYG{p}{|}\PYG{n+nv}{T}\PYG{p}{])} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{check\PYGZus{}digit}\PYG{p}{(}\PYG{n+nv}{H}\PYG{p}{),} \PYG{n+nf}{number\PYGZus{}}\PYG{p}{(}\PYG{n+nv}{T}\PYG{p}{).}
+\PYG{n+nf}{number\PYGZus{}}\PYG{p}{([}\PYG{n+nv}{H}\PYG{p}{])}    \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{n+nf}{check\PYGZus{}digit}\PYG{p}{(}\PYG{n+nv}{H}\PYG{p}{).}
+\PYG{n+nf}{check\PYGZus{}digit}\PYG{p}{(}\PYG{n+nv}{D}\PYG{p}{)} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{p}{[}\PYG{n+nv}{D}\PYG{p}{],} \PYG{p}{\PYGZob{}} \PYG{n+nf}{char\PYGZus{}type}\PYG{p}{(}\PYG{n+nv}{D}\PYG{p}{,} \PYG{l+s+sAtom}{digit}\PYG{p}{)} \PYG{p}{\PYGZcb{}.}
+
+\PYG{c+c1}{\PYGZpc{} Parsing a column character}
+\PYG{n+nf}{parse\PYGZus{}Col}\PYG{p}{(}\PYG{n+nv}{Result}\PYG{p}{)} \PYG{p}{\PYGZhy{}\PYGZhy{}\PYGZgt{}} \PYG{p}{[}\PYG{n+nv}{C}\PYG{p}{],} \PYG{p}{\PYGZob{}}\PYG{n+nf}{atom\PYGZus{}codes}\PYG{p}{(}\PYG{n+nv}{Help}\PYG{p}{,} \PYG{p}{[}\PYG{n+nv}{C}\PYG{p}{]),} \PYG{n+nf}{char\PYGZus{}code}\PYG{p}{(}\PYG{n+nv}{Help}\PYG{p}{,} \PYG{n+nv}{Help2}\PYG{p}{),} \PYG{n+nv}{Result} \PYG{o}{is} \PYG{n+nv}{Help2} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{64}\PYG{p}{\PYGZcb{}.}
+\end{Verbatim}
